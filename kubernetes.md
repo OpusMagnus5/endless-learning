@@ -26,6 +26,7 @@ Narzędzie wiersza poleceń do komunikacji z płaszczyzną kontrolną klastra Ku
 - `kubectl create deployment [nazwa deploymentu] --image=[nazwa obrazu]` - tworzy deployment
 - `kubectl delete deployment [nazwa deploymentu]` -  usuwa deployment
 - `kubectl apply -f [file name.yaml]` - uruchamia to co jest w pliku konfiguracyjnym zamiast pisać wszystkie opcje np w create deployment, jeśli coś jest uruchomione, zmienimy plik i jeszcze raz wywołamy komendę to zaktualizuje obecną instalacje podów
+- `kubectl delete -f [file name.yaml]` - usuwa to co stworzył plik przez apply
 - `kubectl edit deployment [nazwa deploymentu]` - otwiera plik z konfiguracją deploymentu, który możemy skonfigurować
 - `kubectl logs [nazwa podu]` - wchodzi w logi poda
 - `kubectl describe pod [pod name]` - szczegółowe informacje na temat poda w tym historie statusów
