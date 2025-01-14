@@ -20,7 +20,7 @@ Narzędzie wiersza poleceń do komunikacji z płaszczyzną kontrolną klastra Ku
 ### Komendy
 
 - `kubectl get nodes` - zwraca status nodów
-- `kubectl get pod` - zwraca status podów
+- `kubectl get pod -o wide` - zwraca status podów z większą ilościa szczegółów
 - `kubectl get services` - zwraca status serwisów
 - `kubectl get replicaset` - zwraca status replica set
 - `kubectl create deployment [nazwa deploymentu] --image=[nazwa obrazu]` - tworzy deployment
@@ -31,29 +31,143 @@ Narzędzie wiersza poleceń do komunikacji z płaszczyzną kontrolną klastra Ku
 - `kubectl logs [nazwa podu]` - wchodzi w logi poda
 - `kubectl describe pod [pod name]` - szczegółowe informacje na temat poda w tym historie statusów
 - `kubectl exec -it [pod name] -- bin/bash` - wchodzi w terminal aplikacji
+- `kubectl get deployment [nazwa deployemntu] -o yaml` - zwraca plik konfiguracyjny deployment
 
 ### Pliki konfiguracyjne
+
+* deployment
 ```yaml
 apiVersion: apps/v1
 kind: Deployment #rodzaj konfiguracji
 metadata:
-  name: nginx-deployment #nazwa deploymentu
+  name: mongodb
   labels:
-    app: nginx
-spec: # spec jest dla deploymentu
-  replicas: 2 #liczba replik
+    app: mongodb
+spec: #spec jest dla deploymentu
+  replicas: 1 #liczba replik
   selector:
     matchLabels:
-      app: nginx
+      app: mongodb
   template:
     metadata:
       labels:
-        app: nginx
+        app: mongodb
     spec: #specyfikacja dla podów
       containers:
-      - name: nginx
-        image: nginx:1.16
-        ports:
-        - containerPort: 8080
+        - name: mongodb
+          image: mongo
+          ports:
+            - containerPort: 27017
+          env: #zmienne środowiskowe
+            - name: MONGO_INITDB_ROOT_USERNAME
+              valueFrom:
+                secretKeyRef: #użycie pliku z sekretem
+                  name: mongodb-secret
+                  key: username
+            - name: MONGO_INITDB_ROOT_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: mongodb-secret
+                  key: password
 
+```
+
+* możemy tez kilka dokumentów w jednym pliku yaml rozdzielonych ---
+
+```yaml
+apiVersion: apps/v1
+kind: Deployment #rodzaj konfiguracji
+metadata:
+  name: mongodb
+  labels:
+    app: mongodb
+spec: #spec jest dla deploymentu
+  replicas: 1 #liczba replik
+  selector:
+    matchLabels:
+      app: mongodb
+  template:
+    metadata:
+      labels:
+        app: mongodb
+    spec: #specyfikacja dla podów
+      containers:
+        - name: mongodb
+          image: mongo
+          ports:
+            - containerPort: 27017
+          env: #zmienne środowiskowe
+            - name: MONGO_INITDB_ROOT_USERNAME
+              valueFrom:
+                secretKeyRef: #użycie pliku z sekretem
+                  name: mongodb-secret
+                  key: username
+            - name: MONGO_INITDB_ROOT_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: mongodb-secret
+                  key: password
+            - name: ME_CONFIG_MONGODB_SERVER
+              valueFrom:
+                configMapKeyRef: #użycie configmapy
+                  name: mongodb-configmap
+                  key: db_host
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: mongodb-service
+spec:
+  selector:
+    app: mongodb
+  type: LoadBalancer #dla external service, default nie musimy podawać i jest ClusterIp
+  #Po uruchomieniu musimy odpalic komende - minikube service [nazwa servisu] | aby nadać publiczne ip
+  ports:
+    - protocol: TCP
+      port: 27017 #service port
+      targetPort: 27017 #container port
+      nodePort: #port dla external service, musi być miedzy 30000 - 32767
+
+```
+
+* secret
+
+```yaml
+apiVersion: v1
+kind: Secret #typ pliku Secret
+metadata:
+  name: mongodb-secret #nazwa sekretu
+type: Opaque #default type dla pary klucz - wartość
+data: #podajemy klucz i wartość dla sekretu
+  username: dXNlcm5hbWU= #wartość musi zostać zakodowana w base64
+  password: cGFzc3dvcmQ=
+```
+
+* service
+
+```yaml
+apiVersion: v1
+kind: Service
+metadata:
+  name: nginx-service
+spec:
+  selector:
+    app: nginx
+  ports:
+    - protocol: TCP
+      port: 80
+      targetPort: 8080
+
+```
+
+* config map
+
+```yaml
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: mongodb-configmap
+data:
+  db_host: mongodb-service
 ```
