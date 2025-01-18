@@ -196,3 +196,32 @@ metadata:
 data:
   db_host: mongodb-service
 ```
+
+## Ingress
+
+Ingres służy do routowania połączeń między wystawionymi serwisami.
+Do tego trzeba zainstalować implementacje Ingresa czy ingres controller który 
+będzie wykonywał reguły zapisane w pliku.
+
+Plik konfiguracyjny:
+
+```yaml
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: my-ingress
+spec:
+  rules:
+  - host: my-host.com
+    http:
+      paths:
+      - path: /
+        pathType: Prefix  
+        backend:
+          service:
+            name: mongodb-service
+            port: 
+              number: 80
+```
+
+`minikube addons enable ingress` - automatycznie instaluje nginx controller dla ingresa
