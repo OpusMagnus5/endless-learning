@@ -5,6 +5,29 @@ Deployment zarządza ReplicaSet. \
 ReplicaSet zarządza Pod.
 Pod jest warstwą abstrackji dla kontenera.
 
+## Namespaces
+W Kubernetesie można organizować zasoby w namespacy w klastrze. To taki wirtualny klaster w klastrze.\
+Z automatu tworzą sie namespaces:
+* kube-system - namesapce dla procesów kubectl i master, nie należy nic tam ruszać
+* kube-public - publicznie dostępne dane, configmap z danymi o klastrze
+* kube-node-lease - node heartbeats, informacje na temat dostępności nodów
+* default - przechowywuje zasoby tworzone przez nowe namespaces
+
+Namespace tworzymy komendą:
+`kubectl create namespace [nazwa namespacu]` \
+lub poprzez plik configuracyjny np dla ConfigMapy:
+```yaml
+apiVersion: apps/v1
+kind: ConfigMap
+metadata:
+  name: mongodb
+  namespace: my-namespace #nazwa namespace
+```
+
+Można ograniczać zasoby po namespacach.
+Każdy namesapce ma swoje ConfigMapy nie widzi je w innych ale może używać servisów z innych namespaców. \
+Node i volume nie może być przydzielony do namespacu.
+
 ## minikube
 
 Lokalny Kubernetes, skupiający się na ułatwieniu nauki i rozwoju dla Kubernetes.
@@ -32,6 +55,8 @@ Narzędzie wiersza poleceń do komunikacji z płaszczyzną kontrolną klastra Ku
 - `kubectl describe pod [pod name]` - szczegółowe informacje na temat poda w tym historie statusów
 - `kubectl exec -it [pod name] -- bin/bash` - wchodzi w terminal aplikacji
 - `kubectl get deployment [nazwa deployemntu] -o yaml` - zwraca plik konfiguracyjny deployment
+- `kubectl get namespaces` - zwraca namepsaces
+- `kubectl get [np delpoyment] -n my-namespace` - gdy jakiś zasób jest przydzielony do konkretnego zasobu
 
 ### Pliki konfiguracyjne
 
