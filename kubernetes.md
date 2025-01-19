@@ -225,3 +225,31 @@ spec:
 ```
 
 `minikube addons enable ingress` - automatycznie instaluje nginx controller dla ingresa
+
+## Helm
+
+Helm jest package manager dla Kubernetesa. Pakowanie plików yaml i dystrybucja w reposytoriach. 
+
+### Helm Charts
+Jest to paczka plików yaml, można stworzyć własny helm charts za pomocą Helma.
+
+Struktura:
+katalog z nawą chartu
+chart.yaml - meta info, name, zależności, versja
+values.yaml - deafultowe wartości dla templatu
+charts - katalog z zależnościami
+templates - katalog z szablonami chartsów
+
+### Template engine
+Obsługuje silnik templatów, gdzie możemy parametryzować konfiguracje za pomocą placholderów np:
+```yaml
+name: {{ .Values.name }}
+```
+
+W takim przypadku zmienne są brane z dodatkowego pliku konfiguracyjnego - `values.yaml`
+
+Wartości można nadpisać innym plikiem values.yaml, nowe wartości zostaną dopisane a jeśli się powtarzają zostaną nadpisane.
+
+`helm install --values=my-values.yaml [chart name]`
+
+Helm w wersji 3 nie przechowuje hisotrii deploymentu
